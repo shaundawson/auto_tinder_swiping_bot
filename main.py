@@ -4,10 +4,14 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.keys import Keys
 import random
 from keys import CHROME_BINARY_LOC, CHROME_DRIVER_PATH, CHROME_PROFILE_PATH, EMAIL, PASSWORD
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import ElementClickInterceptedException, NoSuchElementException
+from selenium.webdriver import ActionChains
+from selenium.webdriver.common.actions.action_builder import ActionBuilder
+from selenium.webdriver.common.actions.mouse_button import MouseButton
+
 
 url="https://tinder.com/"
 
@@ -48,23 +52,37 @@ def sign_in():
         #Switch back to Tinder window
         driver.switch_to.window(base_window)
         print(driver.title)
-        
+        allow_location_button = driver.find_element(By.XPATH, '//*[@id="modal-manager"]/div/div/div/div/div[3]/button[1]')
+        allow_location_button.click()
+        cookies = driver.find_element(By.XPATH, '//*[@id="content"]/div/div[2]/div/div/div[1]/button')
+        cookies.click()
     except:
        pass
    
 sign_in()
 pause()
 
-#Allow location
-allow_location_button = driver.find_element(By.XPATH, '/html/body/div[2]/div/div/div/div/div[3]/button[1]/span')
-allow_location_button.click()
 
-#Disallow notifications
-notifications_button = driver.find_element(By.XPATH, '//*[@id="modal-manager"]/div/div/div/div/div[3]/button[2]')
+notifications_button = driver.find_element(By.XPATH,'//*[@id="modal-manager"]/div/div/div/div/div[3]/button[2]')
 notifications_button.click()
 
-#Allow cookies
-cookies = driver.find_element(By.XPATH, '//*[@id="content"]/div/div[2]/div/div/div[1]/button')
-cookies.click()
 
+#Tinder free tier only allows 100 "Likes" per day. If you have a premium account, feel free to change to a while loop.
+actions = ActionChains(driver)
+for n in range(100):
+    pause()
+    try:
+        actions.send_keys(Keys.ARROW_RIGHT)    
+        actions.perform()    
+    except:
+        pass
+    try:
+        match = driver.find_element(By.CSS_SELECTOR, ".itsAMatch a").click()
+    except Exception:
+        pass
+    try:    
+        win_app = driver.find_element(By.XPATH, '//*[@id="o-1687095699"]/div/div/div[2]/button[2]').click()
+    except Exception:
+        pass
+    
 driver.quit()
